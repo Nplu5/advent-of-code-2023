@@ -15,7 +15,7 @@ fun solvePart2(input: List<String>): Int {
         .map { it.toWinningCard() }
         .associateBy { it.id }
 
-    return cardIdMap.map { it.value }
+    return cardIdMap.values
         .fold(0) { acc, card ->
             acc + card.getWinningCardsAmount(cardIdMap)
         }

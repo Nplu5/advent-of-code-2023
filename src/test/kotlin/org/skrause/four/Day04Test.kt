@@ -8,7 +8,7 @@ import strikt.assertions.contains
 import strikt.assertions.isEqualTo
 import kotlin.test.Test
 
-@DisplayName("Day 3")
+@DisplayName("Day 4")
 class Day04Test {
     @Test
     @DisplayName("Can parse Scratchcard")

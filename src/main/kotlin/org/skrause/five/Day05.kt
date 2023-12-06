@@ -4,17 +4,44 @@ import org.skrause.utils.readInput
 
 fun main() {
     val input = readInput("Day05/puzzle")
-    solvePart1(input).also { println("Part 1 result: $it") }
+    // solvePart1(input).also { println("Part 1 result: $it") }
     solvePart2(input).also { println("part 2 result: $it") }
 }
 
-fun solvePart1(input: List<String>): Int {
+fun solvePart1(input: List<String>): Long {
     val file = parsePuzzleFile(input)
-    return 1
+    val mappedSeeds = mapSeedsToLocation(file)
+    return mappedSeeds.min()
 }
 
-fun solvePart2(input: List<String>): Int {
-    return 1
+fun mapSeedsToLocation(file: PuzzleFile): List<Seed> {
+    return file.mappingCollections.fold(file.seeds) { list, mapping ->
+        mapping.transform(list)
+    }
+}
+
+private fun MappingCollection.transform(list: List<Seed>): List<Seed> {
+    return list.map { mapValue(it) }
+}
+
+fun MappingCollection.mapValue(seed: Seed): Seed {
+    val mapping = mappings.firstOrNull { it.contains(seed) }
+    return mapping?.mapValue(seed) ?: seed
+}
+
+private fun Mapping.contains(seed: Seed): Boolean {
+    return (sourceStart + this.numberOfSteps) > seed && seed >= sourceStart
+}
+
+private fun Mapping.mapValue(seed: Seed): Seed {
+    return destinationStart + seed - sourceStart
+}
+
+
+fun solvePart2(input: List<String>): Long {
+    val file = parsePuzzleFile(input, true)
+    val mappedSeeds = mapSeedsToLocation(file)
+    return mappedSeeds.min()
 }
 
 val orderMap = mapOf(
@@ -27,8 +54,12 @@ val orderMap = mapOf(
     "humidity-to-location" to 7
 )
 
-fun parsePuzzleFile(input: List<String>): PuzzleFile {
-    val seeds = extractSeeds(input[0])
+fun parsePuzzleFile(input: List<String>, useSeedRange: Boolean = false): PuzzleFile {
+    val seeds = if (useSeedRange) {
+        extractSeedRanges(input[0])
+    } else {
+        extractSeeds(input[0])
+    }
     val mappingCollections = input.slice(IntRange(2, input.size - 1))
         .joinToString("|")
         .split("||")
@@ -36,6 +67,12 @@ fun parsePuzzleFile(input: List<String>): PuzzleFile {
         .map(MappingCollection::parse)
         .sortedWith(MappingComparator())
     return PuzzleFile(seeds, mappingCollections)
+}
+
+fun extractSeedRanges(seedLine: String): List<Seed> {
+    return extractSeeds(seedLine).windowed(2,2){
+        (it[0] until (it[0] + it[1])).map { number -> number }
+    }.flatten()
 }
 
 class MappingComparator : Comparator<MappingCollection> {
@@ -50,17 +87,18 @@ class MappingComparator : Comparator<MappingCollection> {
 
 data class PuzzleFile(val seeds: List<Seed>, val mappingCollections: List<MappingCollection>)
 
-typealias Seed = Int
+typealias Seed = Long
 
 fun extractSeeds(seedLine: String): List<Seed> = seedLine.split(": ")[1]
     .split(" ")
-    .map { it.toInt() }
+    .map(String::toLong)
 
-data class Mapping(val destinationStart: Int, val sourceStart: Int, val numberOfSteps: Int) {
+data class Mapping(val destinationStart: Long, val sourceStart: Long, val numberOfSteps: Long) {
+
     companion object {
         fun parse(textToParse: String): Mapping {
             val (destination, source, range) = textToParse.split(" ")
-                .map(String::toInt)
+                .map(String::toLong)
             return Mapping(destination, source, range)
         }
     }

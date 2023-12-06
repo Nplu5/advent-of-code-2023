@@ -98,7 +98,7 @@ class Day05Test {
             val result = solvePart1(input)
 
             // Assert
-            expectThat(result).isEqualTo(13)
+            expectThat(result).isEqualTo(35)
         }
     }
 
@@ -114,7 +114,7 @@ class Day05Test {
             val result = solvePart2(input)
 
             // Assert
-            expectThat(result).isEqualTo(30)
+            expectThat(result).isEqualTo(46)
         }
     }
 }
